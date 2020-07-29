@@ -1,0 +1,29 @@
+0. List supported or installed format drivers:
+ogrinfo --formats
+
+1. Create a geojson from a table in a database:
+ogr2ogr -f "GeoJSON" ./output_name.geojson -nln output_name.geojson PG:"dbname=XXXXX user=XXXXX 
+host=XXXXX password=XXXXX port=XXXX" -sql "SELECT * from input_table_name"
+
+2. Create a shapefile from a table in a database:
+ogr2ogr -f "ESRI Shapefile" ./output_name.shp PG:"dbname=XXXXX user=XXXXX 
+host=XXXXX password=XXXXX port=XXXX" -sql "SELECT * from input_table_name"
+
+3. Create a table in a database from a geojson file:
+ogr2ogr -f "PostgreSQL" PG:"dbname=XXXXX user=XXXXX
+host=XXXXX password=XXXXX" "./input.geojson" -nln output_table_name
+
+4. Create a geojson file containing a filtered SQL result of another geojson file:
+ogr2ogr -f "GeoJSON" ./filtered.geojson ./input.geojson -sql "SELECT * FROM input WHERE val>=5"
+
+5. Create a geojson file containing a filtered SQL result of a shapefile file:
+ogr2ogr -f "GEOJSON" ./filtered.geojson ./file_name.shp -sql "SELECT * FROM input WHERE val>=5"
+
+6. Create a shapefile containing a filtered SQL result of another shapefile file:
+ogr2ogr -f "ESRI Shapefile" ./filtered.shp ./file_name.shp -sql "SELECT * FROM input WHERE val>=5"
+
+7. Create geojson from shapefile
+ogr2ogr -f "GeoJSON" ./output_name.geojson ./input.shp
+
+8. Reproject a shapefile
+ogr2ogr -f "ESRI Shapefile" -t_srs EPSG:4326 -s_srs EPSG:4269 file_name_proj.shp file_name.shp

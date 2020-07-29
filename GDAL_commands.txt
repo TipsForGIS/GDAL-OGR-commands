@@ -1,0 +1,6 @@
+-- 1. vectorize a raster file into a raster table in postgis
+gdal_polygonize.py raster_file.tif -f "PostgreSQL" PG:"host=localhost dbname=test_db port=5432 user=postgres password=abc123" schema.table_name
+
+------------------------------------------------------------
+
+-- 2. 
