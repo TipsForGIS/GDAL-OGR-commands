@@ -1,7 +1,31 @@
 -- 0. List supported or installed format drivers
 gdalinfo --formats
 ------------------------------------------------------------
--- 1. vectorize a raster file into a raster table in postgis
-gdal_polygonize.py raster_file.tif -f "PostgreSQL" PG:"host=localhost dbname=test_db port=5432 user=postgres password=abc123" schema.table_name
+-- 1. Get info about a raster file
+gdalinfo -stats ./raster_file.tif
 ------------------------------------------------------------
--- 2. 
+-- 2. vectorize a raster file into a raster table in postgis
+gdal_polygonize.py ./raster_file.tif -f "PostgreSQL" PG:"host=localhost dbname=test_db port=5432 user=postgres password=abc123" schema.table_name
+------------------------------------------------------------
+-- 3. Change raster resolution e.g. 30X30 -> 300X300. -r is resampling algorithm: near (default), average, min, max, mode, cubic, etc..
+gdal_translate -tr 300 300 -r average ./raster_file.tif ./raster_file_300m.tif
+------------------------------------------------------------
+-- 4. Change raster projection. -dstnodata is to assign values to NODATA pixels
+gdalwarp -s_srs EPSG:4326 -t_srs EPSG:32637 -dstnodata -9999 ./raster_file.tif ./raster_file_utm37.tif
+------------------------------------------------------------
+-- 5. Create a clipped raster using a vector mask file
+gdalwarp -cutline ./mask.geojson -crop_to_cutline -dstnodata -9999 ./raster_file.tif ./raster_file_clipped.tif
+------------------------------------------------------------
+-- 6. Create NDVI using raster calc
+gdal_calc.py -A ./red_band.tif -B ./ired_band.tif --calc='(B-A)/(B+A)' --outfile ./ndvi.tif
+------------------------------------------------------------
+-- 7. Create panchromatic from one raster with multiple bands using raster calc (blue+red+green)*0.33, assuming blue band -> 2, green -> 3, and red -> 4
+gdal_calc.py -A ./raster_file.tif -A_band=2 -B ./raster_file.tif -B_band=3 -C ./raster_file.tif -C_band=4 --calc='(A+B+C) / 3' --outfile ./panchromatic.tif 
+------------------------------------------------------------
+-- 8. Rasterize vector polygons and assign pixel values from an attribute
+gdal_rasterize -ts 50 50 -a_nodata -9999 -a attr_field ./polygon.geojson ./polygon.tif
+------------------------------------------------------------
+-- 9. Rasterize vector polygons and assign pixel values from a filtered attribute
+gdal_rasterize -ts 50 50 -a_nodata -9999 -a attr_field -where='attr_field>5' ./polygon.geojson ./polygon.tif
+
+
